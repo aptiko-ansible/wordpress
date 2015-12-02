@@ -1,0 +1,140 @@
+---
+- name: Install php
+  apt: name=php5
+
+- name: Install php command line interpreter
+  apt: name=php5-cli
+
+- name: Install unzip
+  apt: name=unzip
+
+- name: Install mysql
+  apt: name=mysql-server
+
+- name: Install php-mysql
+  apt: name=php5-mysql
+
+- name: Install apache php
+  apt: name=libapache2-mod-php5
+
+- name: Install python-mysqldb
+  apt: name=python-mysqldb
+
+- name: Check whether mysql root password is set
+  shell: echo '\q' | mysql --user=root mysql
+  register: connect_to_mysql_without_password
+  always_run: True
+  ignore_errors: True
+  changed_when: False
+
+- name: Set mysql root password
+  shell: >
+    echo "SET PASSWORD for 'root'@'localhost' 
+    = PASSWORD('{{ mysql_root_password}}');"
+    | mysql --user=root mysql
+  when: "connect_to_mysql_without_password.rc == 0"
+
+- name: Create mysql wordpress user
+  mysql_user:
+    name: wordpress
+    password: "{{ wordpress_db_password }}"
+    priv: wordpress.*:ALL,GRANT
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+
+- name: Create wordpress database
+  mysql_db:
+    name: wordpress
+    encoding: "{{ wordpress_db_charset }}"
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+
+- name: Check wordpress version
+  shell: >
+    echo "<?php include '/usr/local/wordpress/wp-includes/version.php';
+    echo \$wp_version; ?>" | php
+  register: get_wp_version
+  always_run: True
+  ignore_errors: True
+  changed_when: False
+
+- name: Install wordpress
+  shell: >
+    wget -O /tmp/wp.tar.gz https://wordpress.org/wordpress-4.3.1.tar.gz &&
+    cd /usr/local &&
+    tar xzf /tmp/wp.tar.gz
+  when: "get_wp_version.stdout != '4.3.1'"
+
+- name: Create config directory
+  file: dest=/etc/wordpress state=directory
+
+- name: Create wp-config.php
+  template: src=wp-config.php dest=/etc/wordpress/wp-config.php
+
+- name: Link wp-config.php
+  file:
+    src: /etc/wordpress/wp-config.php
+    dest: /usr/local/wordpress/wp-config.php
+    state: link
+
+- name: Create wp-uploads directory
+  file:
+    dest: /var/local/wp-uploads
+    owner: www-data
+    state: directory
+
+- name: Link wp-uploads directory
+  file:
+    src: /var/local/wp-uploads
+    dest: /usr/local/wordpress/wp-uploads
+    state: link
+
+- name: Check subscribe-to-comments plugin version
+  shell: >
+    grep '$version'
+    /usr/local/wordpress/wp-content/plugins/subscribe-to-comments/subscribe-to-comments.php
+    | awk -F "'" '{ printf "%s", $2 }'
+  register: get_subscribe_to_comments_version
+  always_run: True
+  ignore_errors: True
+  changed_when: False
+
+- name: Install subscribe-to-comments plugin
+  shell: >
+    wget -O /tmp/subscribe-to-comments.zip
+    https://downloads.wordpress.org/plugin/subscribe-to-comments.2.3.zip &&
+    cd /usr/local/wordpress/wp-content/plugins &&
+    unzip -o /tmp/subscribe-to-comments.zip
+  when: "get_subscribe_to_comments_version.stdout != '2.3-bleeding'"
+
+- name: Check user-role-editor plugin version
+  shell: >
+    grep 'Version:'
+    /usr/local/wordpress/wp-content/plugins/user-role-editor/user-role-editor.php
+    | awk '{ printf "%s", $2 }'
+  register: get_user_role_editor_version
+  always_run: True
+  ignore_errors: True
+  changed_when: False
+
+- name: Install user-role-editor plugin
+  shell: >
+    wget -O /tmp/user-role-editor.zip
+    https://downloads.wordpress.org/plugin/user-role-editor.4.19.1.zip &&
+    cd /usr/local/wordpress/wp-content/plugins &&
+    unzip -o /tmp/user-role-editor.zip
+  when: "get_user_role_editor_version.stdout != '4.19.1'"
+
+- name: Install themes
+  git:
+    repo: "{{ item.value }}"
+    dest: /usr/local/wordpress/wp-content/themes/{{ item.key }}
+    ssh_opts: '-o StrictHostKeyChecking=no'
+  with_dict: "{{ wordpress_themes }}"
+
+- name: Setup apache for wordpress
+  template:
+    src: apache-wordpress.conf 
+    dest: /etc/apache2/snippets/{{ wordpress_domain }}/wordpress.conf
+  notify:
+  - Restart apache
