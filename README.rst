@@ -10,12 +10,16 @@ Debian. It also configures awstats. It depends on ``apache`` and
 ``apache-vhost``, which must also be listed as roles for the server. Use
 ``wordpress`` like this::
 
+  - role: apache-vhost
+    server_name: www.mydoman.com
+    server_aliases:
+      - mydomain.com
   - role: wordpress
     wordpress_domain: www.mydomain.com
     wordpress_url: /blog
     wordpress_themes:
-    - mytheme: https://github.com/someone/mytheme.git
-    - yourtheme: ssh://git@bitbucket.org/someone/yourtheme.git
+      mytheme: https://github.com/someone/mytheme.git
+      yourtheme: ssh://git@bitbucket.org/someone/yourtheme.git
     mysql_root_password: topsecret
     wordpress_db_password: topsecret
     wordpress_db_charset: utf-8

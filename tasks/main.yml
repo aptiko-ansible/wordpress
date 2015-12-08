@@ -86,7 +86,7 @@
 - name: Link wp-uploads directory
   file:
     src: /var/local/wp-uploads
-    dest: /usr/local/wordpress/wp-uploads
+    dest: /usr/local/wordpress/wp-content/uploads
     state: link
 
 - name: Check subscribe-to-comments plugin version
@@ -120,10 +120,28 @@
 - name: Install user-role-editor plugin
   shell: >
     wget -O /tmp/user-role-editor.zip
-    https://downloads.wordpress.org/plugin/user-role-editor.4.19.1.zip &&
+    https://downloads.wordpress.org/plugin/user-role-editor.4.20.1.zip &&
     cd /usr/local/wordpress/wp-content/plugins &&
     unzip -o /tmp/user-role-editor.zip
-  when: "get_user_role_editor_version.stdout != '4.19.1'"
+  when: "get_user_role_editor_version.stdout != '4.20.1'"
+
+- name: Check wordpress-importer plugin version
+  shell: >
+    grep 'Version:'
+    /usr/local/wordpress/wp-content/plugins/wordpress-importer/wordpress-importer.php
+    | awk '{ printf "%s", $2 }'
+  register: get_wordpress_importer_version
+  always_run: True
+  ignore_errors: True
+  changed_when: False
+
+- name: Install wordpress-importer plugin
+  shell: >
+    wget -O /tmp/wordpress-importer.zip
+    https://downloads.wordpress.org/plugin/wordpress-importer.0.6.1.zip &&
+    cd /usr/local/wordpress/wp-content/plugins &&
+    unzip -o /tmp/wordpress-importer.zip
+  when: "get_wordpress_importer_version.stdout != '0.6.1'"
 
 - name: Install themes
   git:
