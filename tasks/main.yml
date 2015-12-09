@@ -143,6 +143,24 @@
     unzip -o /tmp/wordpress-importer.zip
   when: "get_wordpress_importer_version.stdout != '0.6.1'"
 
+- name: Check custom-taxonomy-order-ne plugin version
+  shell: >
+    grep 'Version:'
+    /usr/local/wordpress/wp-content/plugins/custom-taxonomy-order-ne/custom-taxonomy-order-ne.php
+    | awk '{ printf "%s", $2 }'
+  register: get_custom_taxonomy_order_ne_version
+  always_run: True
+  ignore_errors: True
+  changed_when: False
+
+- name: Install custom-taxonomy-order-ne plugin
+  shell: >
+    wget -O /tmp/custom-taxonomy-order-ne.zip
+    https://downloads.wordpress.org/plugin/custom-taxonomy-order-ne.2.7.3.zip &&
+    cd /usr/local/wordpress/wp-content/plugins &&
+    unzip -o /tmp/custom-taxonomy-order-ne.zip
+  when: "get_custom_taxonomy_order_ne_version.stdout != '2.7.3'"
+
 - name: Install themes
   git:
     repo: "{{ item.value }}"
