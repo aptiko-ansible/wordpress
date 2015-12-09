@@ -60,10 +60,10 @@
 
 - name: Install wordpress
   shell: >
-    wget -O /tmp/wp.tar.gz https://wordpress.org/wordpress-4.3.1.tar.gz &&
+    wget -O /tmp/wp.tar.gz https://wordpress.org/wordpress-4.4.tar.gz &&
     cd /usr/local &&
     tar xzf /tmp/wp.tar.gz
-  when: "get_wp_version.stdout != '4.3.1'"
+  when: "get_wp_version.stdout != '4.4'"
 
 - name: Create config directory
   file: dest=/etc/wordpress state=directory
