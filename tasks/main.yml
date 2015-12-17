@@ -164,7 +164,7 @@
 - name: Check custom-taxonomy-order-ne plugin version
   shell: >
     grep 'Version:'
-    /usr/local/wordpress/wp-content/plugins/custom-taxonomy-order-ne/custom-taxonomy-order-ne.php
+    /usr/local/wordpress/wp-content/plugins/custom-taxonomy-order-ne/customtaxorder.php
     | awk '{ printf "%s", $2 }'
   register: get_custom_taxonomy_order_ne_version
   always_run: True
