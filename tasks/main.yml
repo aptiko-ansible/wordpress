@@ -120,10 +120,10 @@
 - name: Install user-role-editor plugin
   shell: >
     wget -O /tmp/user-role-editor.zip
-    https://downloads.wordpress.org/plugin/user-role-editor.4.20.1.zip &&
+    https://downloads.wordpress.org/plugin/user-role-editor.4.21.1.zip &&
     cd /usr/local/wordpress/wp-content/plugins &&
     unzip -o /tmp/user-role-editor.zip
-  when: "get_user_role_editor_version.stdout != '4.20.1'"
+  when: "get_user_role_editor_version.stdout != '4.21.1'"
 
 - name: Check wordpress-importer plugin version
   shell: >
@@ -142,6 +142,24 @@
     cd /usr/local/wordpress/wp-content/plugins &&
     unzip -o /tmp/wordpress-importer.zip
   when: "get_wordpress_importer_version.stdout != '0.6.1'"
+
+- name: Check akismet plugin version
+  shell: >
+    grep 'Version:'
+    /usr/local/wordpress/wp-content/plugins/akismet/akismet.php
+    | awk '{ printf "%s", $2 }'
+  register: get_akismet_version
+  always_run: True
+  ignore_errors: True
+  changed_when: False
+
+- name: Install akismet plugin
+  shell: >
+    wget -O /tmp/akismet.zip
+    https://downloads.wordpress.org/plugin/akismet.3.1.6.zip &&
+    cd /usr/local/wordpress/wp-content/plugins &&
+    unzip -o /tmp/akismet.zip
+  when: "get_akismet_version.stdout != '3.1.6'"
 
 - name: Check custom-taxonomy-order-ne plugin version
   shell: >
