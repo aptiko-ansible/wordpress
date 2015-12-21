@@ -49,6 +49,9 @@
     login_user: root
     login_password: "{{ mysql_root_password }}"
 
+- name: Backup MySQL
+  template: src=backup-mysql.sh dest=/etc/duplicity/pre/mysql mode=0700
+
 - name: Check wordpress version
   shell: >
     echo "<?php include '/usr/local/wordpress/wp-includes/version.php';
