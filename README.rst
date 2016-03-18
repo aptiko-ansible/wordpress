@@ -11,10 +11,11 @@ Debian. It also configures awstats. It depends on ``apache`` and
 ``wordpress`` like this::
 
   - role: apache-vhost
-    server_name: www.mydoman.com
+    server_name: www.mydomain.com
     server_aliases:
       - mydomain.com
   - role: wordpress
+    wordpress_installation_name: myblog
     wordpress_domain: www.mydomain.com
     wordpress_url: /blog
     wordpress_themes:
@@ -40,6 +41,8 @@ Variables
   specified.
 - ``wordpress_db_password``: The password for the MySQL ``wordpress``
   user. This is also set.
+- ``wordpress_installation_name``: A nickname for that particular blog; it is
+  used in directory names.
 - ``wordpress_domain``: The domain name, such as ``myblog.com``.
 - ``wordpress_url``: The URL path, without the domain; such as
   ``/blog``. It must not end in a slash. If the blog is at the top

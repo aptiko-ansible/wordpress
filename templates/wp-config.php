@@ -1,6 +1,6 @@
 <?php
 
-define('DB_NAME', 'wordpress');
+define('DB_NAME', 'wordpress_{{ wordpress_installation_name }}');
 define('DB_USER', 'wordpress');
 define('DB_PASSWORD', '{{ wordpress_db_password }}');
 define('DB_HOST', 'localhost');
@@ -19,7 +19,7 @@ define('NONCE_SALT',       '{{ wordpress_nonce_salt }}');
 $table_prefix = 'wp_';
 
 define('WP_DEBUG', false);
-define('ABSPATH', '/usr/local/wordpress/');
+define('ABSPATH', '/usr/local/wordpress-{{ wordpress_installation_name }}/');
 if ( !defined('ABSPATH') )
         define('ABSPATH', dirname(__FILE__) . '/');
 require_once(ABSPATH . 'wp-settings.php');

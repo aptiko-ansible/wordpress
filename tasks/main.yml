@@ -38,13 +38,13 @@
   mysql_user:
     name: wordpress
     password: "{{ wordpress_db_password }}"
-    priv: wordpress.*:ALL,GRANT
+    priv: wordpress\_%.*:ALL,GRANT
     login_user: root
     login_password: "{{ mysql_root_password }}"
 
 - name: Create wordpress database
   mysql_db:
-    name: wordpress
+    name: wordpress_{{ wordpress_installation_name }}
     encoding: "{{ wordpress_db_charset }}"
     login_user: root
     login_password: "{{ mysql_root_password }}"
@@ -54,83 +54,89 @@
 
 - name: Install wordpress
   shell: >
+    rm -rf /tmp/wp.tar.gz /tmp/wordpress &&
     wget -O /tmp/wp.tar.gz https://wordpress.org/latest.tar.gz &&
-    cd /usr/local &&
+    cd /tmp &&
     tar xzf /tmp/wp.tar.gz &&
-    chown -R www-data wordpress
+    mv /tmp/wordpress /usr/local/wordpress-{{ wordpress_installation_name }} &&
+    chown -R www-data /usr/local/wordpress-{{ wordpress_installation_name }}
   args:
-    creates: /usr/local/wordpress
+    creates: /usr/local/wordpress-{{ wordpress_installation_name }}
 
 - name: Create config directory
   file: dest=/etc/wordpress state=directory
 
 - name: Create wp-config.php
-  template: src=wp-config.php dest=/etc/wordpress/wp-config.php
+  template: src=wp-config.php dest=/etc/wordpress/wp-config-{{ wordpress_installation_name }}.php
 
 - name: Link wp-config.php
   file:
-    src: /etc/wordpress/wp-config.php
-    dest: /usr/local/wordpress/wp-config.php
+    src: /etc/wordpress/wp-config-{{ wordpress_installation_name }}.php
+    dest: /usr/local/wordpress-{{ wordpress_installation_name }}/wp-config.php
     state: link
 
 - name: Create wp-uploads directory
   file:
-    dest: /var/local/wp-uploads
+    dest: /var/local/wp-uploads-{{ wordpress_installation_name }}
     owner: www-data
     state: directory
 
 - name: Link wp-uploads directory
   file:
-    src: /var/local/wp-uploads
-    dest: /usr/local/wordpress/wp-content/uploads
+    src: /var/local/wp-uploads-{{ wordpress_installation_name }}
+    dest: /usr/local/wordpress-{{ wordpress_installation_name }}/wp-content/uploads
     state: link
 
 - name: Install subscribe-to-comments plugin
   shell: >
     wget -O /tmp/subscribe-to-comments.zip
     https://downloads.wordpress.org/plugin/subscribe-to-comments.2.3.zip &&
-    cd /usr/local/wordpress/wp-content/plugins &&
-    su www-data -c "unzip -o /tmp/subscribe-to-comments.zip"
+    cd /usr/local/wordpress-{{ wordpress_installation_name }}/wp-content/plugins &&
+    unzip -o /tmp/subscribe-to-comments.zip &&
+    chown -R www-data subscribe-to-comments
   args:
-    creates: /usr/local/wordpress/wp-content/plugins/subscribe-to-comments
+    creates: /usr/local/wordpress-{{ wordpress_installation_name }}/wp-content/plugins/subscribe-to-comments
 
 - name: Install user-role-editor plugin
   shell: >
     wget -O /tmp/user-role-editor.zip
     https://downloads.wordpress.org/plugin/user-role-editor.4.21.1.zip &&
-    cd /usr/local/wordpress/wp-content/plugins &&
-    su www-data -c "unzip -o /tmp/user-role-editor.zip"
+    cd /usr/local/wordpress-{{ wordpress_installation_name }}/wp-content/plugins &&
+    unzip -o /tmp/user-role-editor.zip &&
+    chown -R www-data user-role-editor
   args:
-    creates: /usr/local/wordpress/wp-content/plugins/user-role-editor
+    creates: /usr/local/wordpress-{{ wordpress_installation_name }}/wp-content/plugins/user-role-editor
 
 - name: Install wordpress-importer plugin
   shell: >
     wget -O /tmp/wordpress-importer.zip
     https://downloads.wordpress.org/plugin/wordpress-importer.0.6.1.zip &&
-    cd /usr/local/wordpress/wp-content/plugins &&
-    su www-data -c "unzip -o /tmp/wordpress-importer.zip"
+    cd /usr/local/wordpress-{{ wordpress_installation_name }}/wp-content/plugins &&
+    unzip -o /tmp/wordpress-importer.zip &&
+    chown -R www-data wordpress-importer
   args:
-    creates: /usr/local/wordpress/wp-content/plugins/wordpress-importer
+    creates: /usr/local/wordpress-{{ wordpress_installation_name }}/wp-content/plugins/wordpress-importer
 
 - name: Install custom-taxonomy-order-ne plugin
   shell: >
     wget -O /tmp/custom-taxonomy-order-ne.zip
     https://downloads.wordpress.org/plugin/custom-taxonomy-order-ne.2.7.3.zip &&
-    cd /usr/local/wordpress/wp-content/plugins &&
-    su www-data -c "unzip -o /tmp/custom-taxonomy-order-ne.zip"
+    cd /usr/local/wordpress-{{ wordpress_installation_name }}/wp-content/plugins &&
+    unzip -o /tmp/custom-taxonomy-order-ne.zip &&
+    chown -R www-data custom-taxonomy-order-ne
   args:
-    creates: /usr/local/wordpress/wp-content/plugins/custom-taxonomy-order-ne
+    creates: /usr/local/wordpress-{{ wordpress_installation_name }}/wp-content/plugins/custom-taxonomy-order-ne
 
 - name: Install themes
   git:
     repo: "{{ item.value }}"
-    dest: /usr/local/wordpress/wp-content/themes/{{ item.key }}
+    dest: /usr/local/wordpress-{{ wordpress_installation_name }}/wp-content/themes/{{ item.key }}
     ssh_opts: '-o StrictHostKeyChecking=no'
   with_dict: "{{ wordpress_themes }}"
 
 - name: Setup apache for wordpress
   template:
     src: apache-wordpress.conf 
-    dest: /etc/apache2/snippets/{{ wordpress_domain }}/wordpress.conf
+    dest: /etc/apache2/snippets/{{ wordpress_domain }}/wordpress-{{ wordpress_installation_name }}.conf
   notify:
   - Restart apache
