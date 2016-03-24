@@ -56,6 +56,11 @@ Variables
   ``wordpress_nonce_salt``: These correspond to Wordpress configuration
   variables; for example, ``wordpress_db_charset`` corresponds to
   ``DB_CHARSET``.
+- ``php_upload_max_filesize``, ``php_post_max_size``,
+  ``php_memory_limit``: Parameters used to change the file upload size.
+  The defaults are 12M, 13M, 15M. See
+  https://kinsta.com/blog/increasing-the-maximum-upload-size-in-wordpress/
+  for more.
 
 Meta
 ====
