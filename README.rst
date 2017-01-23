@@ -56,6 +56,7 @@ Variables
   ``wordpress_nonce_salt``: These correspond to Wordpress configuration
   variables; for example, ``wordpress_db_charset`` corresponds to
   ``DB_CHARSET``.
+- ``wordpress_https``: If True, http URLs will be redirected to https.
 - ``php_upload_max_filesize``, ``php_post_max_size``,
   ``php_memory_limit``: Parameters used to change the file upload size.
   The defaults are 12M, 13M, 15M. See
