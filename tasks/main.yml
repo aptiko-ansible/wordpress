@@ -50,7 +50,7 @@
     login_password: "{{ mysql_root_password }}"
 
 - name: Backup MySQL
-  template: src=backup-mysql.sh dest=/etc/duplicity/pre/mysql mode=0700
+  template: src=backup-mysql.sh dest=/etc/duply/main/pre-scripts/mysql mode=0700
 
 - name: Install wordpress
   shell: >
