@@ -23,7 +23,7 @@
 - name: Check whether mysql root password is set
   shell: echo '\q' | mysql --user=root mysql
   register: connect_to_mysql_without_password
-  always_run: True
+  check_mode: no
   ignore_errors: True
   changed_when: False
 
