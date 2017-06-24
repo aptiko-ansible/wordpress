@@ -1,21 +1,48 @@
 ---
+# PHP installation for Debian jessie
+
 - name: Install php
   apt: name=php5
+  when: ansible_distribution_release == 'jessie'
 
 - name: Install php command line interpreter
   apt: name=php5-cli
+  when: ansible_distribution_release == 'jessie'
+
+- name: Install php-mysql
+  apt: name=php5-mysql
+  when: ansible_distribution_release == 'jessie'
+
+- name: Install apache php
+  apt: name=libapache2-mod-php5
+  when: ansible_distribution_release == 'jessie'
+
+# PHP installation for Ubuntu 16.04 or Debian stretch
+
+- name: Install php
+  apt: name=php
+  when: ansible_distribution_release != 'jessie'
+
+- name: Install php command line interpreter
+  apt: name=php-cli
+  when: ansible_distribution_release != 'jessie'
+
+- name: Install php-mysql
+  apt: name=php-mysql
+  when: ansible_distribution_release != 'jessie'
+
+- name: Install apache php
+  apt: name=libapache2-mod-php
+  when: ansible_distribution_release != 'jessie'
+
+# End of PHP installation
+
 
 - name: Install unzip
   apt: name=unzip
 
 - name: Install mysql
   apt: name=mysql-server
-
-- name: Install php-mysql
-  apt: name=php5-mysql
-
-- name: Install apache php
-  apt: name=libapache2-mod-php5
 
 - name: Install python-mysqldb
   apt: name=python-mysqldb
