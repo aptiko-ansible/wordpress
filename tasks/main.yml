@@ -78,6 +78,7 @@
 
 - name: Backup MySQL
   template: src=backup-mysql.sh dest=/etc/duply/main/pre-scripts/mysql mode=0700
+  when: duply_deactivate == false
 
 - name: Install wordpress
   shell: >
